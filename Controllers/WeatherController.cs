@@ -27,13 +27,15 @@ namespace WeatherApi.Controllers
             {
                 try
                 {
+                    //make request to OpenWeather API
                     client.BaseAddress = new Uri("http://api.openweathermap.org");
                     var response = await client.GetAsync($"/data/2.5/weather?q={city}&appid=780104290d484ec72be8129eef17e671&units=metric");
                     response.EnsureSuccessStatusCode();
-                    
+                    //read result of request and deserialize to object
                     var stringResult = await response.Content.ReadAsStringAsync();
                     var rawWeather = JsonConvert.DeserializeObject<OpenWeatherResponse>(stringResult);
-                    
+
+                    //return new object with formated weather data
                     return Ok(new
                     {
                         Date = DateTimeOffset.FromUnixTimeSeconds((long)rawWeather.Dt).ToString("dddd, dd MMMM yyyy"),
@@ -57,13 +59,16 @@ namespace WeatherApi.Controllers
             {
                 try
                 {
+                    //make request to OpenWeather API
                     client.BaseAddress = new Uri("http://api.openweathermap.org");
                     var response = await client.GetAsync($"/data/2.5/forecast?q={city}&appid=780104290d484ec72be8129eef17e671&units=metric");
                     response.EnsureSuccessStatusCode();
-
+                    //read result of request and deserialize to object and then to list
                     var stringResult = await response.Content.ReadAsStringAsync();
                     var rawWeather = JsonConvert.DeserializeObject<FiveDayForecast>(stringResult);
                     var weatherList = rawWeather.List;
+
+                    //formats the list with weather data 
                     var result = weatherList.Select(item => new
                     {
                         Date = DateTimeOffset.FromUnixTimeSeconds((long)item.Dt).ToString("dddd, dd MMMM yyyy"),
@@ -72,6 +77,7 @@ namespace WeatherApi.Controllers
                         WindSpeed = item.Wind.Speed.ToString() + " km/h",
                         Clouds = item.Clouds.All.ToString() + " %"
                     }).ToList();
+                    //return formated weather data
                     return Ok(
                       result
                     );
